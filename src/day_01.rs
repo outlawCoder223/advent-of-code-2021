@@ -1,7 +1,7 @@
 use std::fs;
 
 pub fn execute() {
-    let input = fs::read_to_string("input.txt").expect("Unable to read file");
+    let input = fs::read_to_string("input/input_01.txt").expect("Unable to read file");
     let input_vec: Vec<i32> = input
         .split("\n")
         .map(|n| n.parse::<i32>().unwrap())
