@@ -28,6 +28,7 @@ pub fn execute() {
         prev_sum = sum;
     }
 
-    println!("Count: {}", count);
-    println!("Sum Count: {}", sum_count);
+    println!("Day 1 Answer:");
+    println!("\tCount: {}", count);
+    println!("\tSum Count: {}", sum_count);
 }
