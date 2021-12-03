@@ -1,4 +1,6 @@
+use core::num;
 use std::fs;
+use std::mem::size_of;
 const REPORT_BIN_LEN: usize = 12;
 
 #[derive(Debug)]
@@ -22,14 +24,29 @@ impl Report<'_> {
         }
     }
 
-    fn calculate_epsilon(&mut self) {
+    fn calc_epsilon(&mut self) {
         self.epsilon = self.gamma ^ 0xFFF;
     }
 
-    fn calculate_pwr_consump(&mut self) {
+    fn calc_pwr_consump(&mut self) {
         self.pwr_consump = self.gamma * self.epsilon;
     }
 }
+
+fn find_mcb(num_list: &Vec<usize>, bit: usize) -> usize {
+    let mut num_of_ones: usize = 0;
+
+    for num in num_list {
+        num_of_ones += num >> (bit - 1) & 0x1;
+    }
+    return num_of_ones / (num_list.len() / 2);
+}
+
+// fn calc_oxy_rating(nums: &Vec<usize>) -> usize {
+//     if nums.len() == 1 {
+//         return nums[0];
+//     }
+// }
 
 pub fn execute() {
     let input = fs::read_to_string("input/input_03.txt").expect("Unable to open file");
@@ -40,22 +57,14 @@ pub fn execute() {
 
     let mut report = Report::new(binary_nums.len(), &binary_nums);
 
-    for num in report.binary_report {
-        for i in 0..REPORT_BIN_LEN {
-            report.num_ones[i] += num >> (REPORT_BIN_LEN - 1 - i) & 0x1;
-        }
+    for i in 0..REPORT_BIN_LEN {
+        report.num_ones[i] = find_mcb(report.binary_report, REPORT_BIN_LEN - i);
     }
 
-    report.num_ones.iter().for_each(|num| {
-        if num >= &(report.len / 2) {
-            report.gamma = report.gamma << 1 | 0x1;
-        } else {
-            report.gamma = report.gamma << 1;
-        }
-    });
+    report.gamma = report.num_ones.iter().fold(0, |acc, &bit| (acc << 1) ^ bit);
 
-    report.calculate_epsilon();
-    report.calculate_pwr_consump();
+    report.calc_epsilon();
+    report.calc_pwr_consump();
 
     println!("Gamma: {}", report.gamma);
     println!("Epsilon: {}", report.epsilon);
