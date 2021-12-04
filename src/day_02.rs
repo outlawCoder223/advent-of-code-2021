@@ -22,5 +22,6 @@ pub fn execute() {
         }
     }
 
+    println!("-------DAY 2-------");
     println!("Day 2 Answer: {}", x * y);
 }
