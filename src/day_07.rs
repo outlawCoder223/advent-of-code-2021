@@ -7,14 +7,15 @@ pub fn execute() {
         .map(|num| num.parse::<i32>().unwrap())
         .collect();
 
-    let mean = nums.iter().sum::<i32>() / nums.len() as i32;
+    let max: i32 = *nums.iter().max().unwrap();
 
     let mut min_fuel: i32 = i32::MAX;
     let mut current_fuel: i32 = 0;
 
-    for i in 0..mean {
+    for i in 0..max {
         for num in nums.iter() {
-            current_fuel += i32::abs(num - i);
+            let n = i32::abs(num - i);
+            current_fuel += (n * (n + 1)) / 2;
         }
         if current_fuel < min_fuel {
             min_fuel = current_fuel;
@@ -22,5 +23,5 @@ pub fn execute() {
         current_fuel = 0;
     }
 
-    println!("Max Fuel: {}", min_fuel);
+    println!("Min Fuel: {}", min_fuel);
 }
