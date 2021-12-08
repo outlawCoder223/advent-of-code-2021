@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::collections::VecDeque; // futile attempt at making the vector work for 256 days
 use std::fs;
 
 #[derive(Debug)]
