@@ -1,27 +1,16 @@
 use std::fs;
 
-pub fn execute() {
-    let input = fs::read_to_string("input/input_09.txt").expect("Unable to read file");
-
-    let digits: Vec<Vec<u32>> = input
-        .lines()
-        .map(|d| d.chars().map(|d| d.to_digit(10).unwrap()).collect())
-        .collect();
-
+fn find_low_spots(digits: &Vec<Vec<u32>>) -> (u32, Vec<(usize, usize)>) {
     let height = digits.len();
     let width = digits[0].len();
-    println!("{}, {}", height, width);
 
+    let mut coords: Vec<(usize, usize)> = Vec::new();
     let mut risk = 0;
     let mut right: u32;
     let mut left: u32;
     let mut top: u32;
     let mut bottom: u32;
     let mut curr: u32;
-
-    // for digit in digits.iter() {
-    //     println!("{:?}", digit);
-    // }
 
     for y in 0..height {
         for x in 0..width {
@@ -32,7 +21,7 @@ pub fn execute() {
                     bottom = digits[y + 1][x];
 
                     if curr < right && curr < bottom {
-                        println!("{}, {}", x, y);
+                        coords.push((x, y));
                         risk += curr + 1;
                     }
                 } else if y == height - 1 {
@@ -40,7 +29,7 @@ pub fn execute() {
                     top = digits[y - 1][x];
 
                     if curr < right && curr < top {
-                        println!("{}, {}", x, y);
+                        coords.push((x, y));
                         risk += curr + 1;
                     }
                 } else {
@@ -49,7 +38,7 @@ pub fn execute() {
                     bottom = digits[y + 1][x];
 
                     if curr < right && curr < bottom && curr < top {
-                        println!("{}, {}", x, y);
+                        coords.push((x, y));
                         risk += curr + 1;
                     }
                 }
@@ -59,7 +48,7 @@ pub fn execute() {
                     bottom = digits[y + 1][x];
 
                     if curr < left && curr < bottom {
-                        println!("{}, {}", x, y);
+                        coords.push((x, y));
                         risk += curr + 1;
                     }
                 } else if y == height - 1 {
@@ -67,7 +56,7 @@ pub fn execute() {
                     top = digits[y - 1][x];
 
                     if curr < left && curr < top {
-                        println!("{}, {}", x, y);
+                        coords.push((x, y));
                         risk += curr + 1;
                     }
                 } else {
@@ -76,7 +65,7 @@ pub fn execute() {
                     bottom = digits[y + 1][x];
 
                     if curr < left && curr < bottom && curr < top {
-                        println!("{}, {}", x, y);
+                        coords.push((x, y));
                         risk += curr + 1;
                     }
                 }
@@ -87,14 +76,14 @@ pub fn execute() {
                     bottom = digits[y + 1][x];
 
                     if curr < left && curr < bottom && curr < right {
-                        println!("{}, {}", x, y);
+                        coords.push((x, y));
                         risk += curr + 1;
                     }
                 } else if y == height - 1 {
                     top = digits[y - 1][x];
 
                     if curr < left && curr < top && curr < right {
-                        println!("{}, {}", x, y);
+                        coords.push((x, y));
                         risk += curr + 1;
                     }
                 } else {
@@ -102,7 +91,7 @@ pub fn execute() {
                     top = digits[y - 1][x];
 
                     if curr < left && curr < top && curr < right && curr < bottom {
-                        println!("{}, {}", x, y);
+                        coords.push((x, y));
                         risk += curr + 1;
                     }
                 }
@@ -110,5 +99,56 @@ pub fn execute() {
         }
     }
 
-    println!("{}", risk);
+    (risk, coords)
+}
+
+fn is_in_bounds(x: i32, y: i32, basin: &Vec<Vec<u32>>) -> bool {
+    let height = basin.len() as i32;
+    let width = basin[0].len() as i32;
+
+    x >= 0 && y >= 0 && x < width && y < height
+}
+
+fn is_valid_space(x: i32, y: i32, basin: &Vec<Vec<u32>>) -> bool {
+    is_in_bounds(x, y, basin) && basin[y as usize][x as usize] < 9
+}
+
+fn find_basin(x: i32, y: i32, basin: &mut Vec<Vec<u32>>) -> u32 {
+    if !is_valid_space(x, y, basin) {
+        return 0;
+    } else {
+        basin[y as usize][x as usize] = 9;
+
+        let dirs: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
+
+        return 1 + dirs.iter().fold(0, |count, (_y, _x)| {
+            return count + find_basin(x + _x, y + _y, basin);
+        });
+    }
+}
+
+pub fn execute() {
+    println!("---------DAY 9----------");
+    let input = fs::read_to_string("input/input_09.txt").expect("Unable to read file");
+
+    let mut digits: Vec<Vec<u32>> = input
+        .lines()
+        .map(|d| d.chars().map(|d| d.to_digit(10).unwrap()).collect())
+        .collect();
+
+    let (risk, coords) = find_low_spots(&digits);
+
+    let mut basin_sizes = Vec::new();
+
+    for (x, y) in coords.iter() {
+        basin_sizes.push(find_basin(*x as i32, *y as i32, &mut digits))
+    }
+
+    basin_sizes.sort();
+    basin_sizes.reverse();
+
+    let result = &basin_sizes[0..3].iter().fold(1, |acc, x| acc * x);
+
+    println!("Risk: {}", risk);
+    println!("Result: {}", result);
 }
